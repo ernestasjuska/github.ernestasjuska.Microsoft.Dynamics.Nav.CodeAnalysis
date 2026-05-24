@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
 
     env:
-      PROJECT_NAME: github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis
+      PROJECT_NAME: github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis.csproj
       NUGET_SOURCE: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
 
     steps:
@@ -54,7 +54,7 @@ jobs:
         Set-StrictMode -Version Latest
         $ErrorActionPreference = 'Stop'
          
-        # NOTE: We are in alpha.
+        # NOTE: We are in beta.
         $OutputDir = $(
           New-Item -ItemType Directory -Path '.output' -Force |
           Select-Object -ExpandProperty FullName
