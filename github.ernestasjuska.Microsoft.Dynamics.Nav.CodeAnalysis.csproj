@@ -1,17 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>C:\MY\NuGet\OfflinePackages</PackageOutputPath>
 		<PackageId>github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</PackageId>
-		<Version>0.1.0-alpha</Version>
+		<Version>0.0.1-beta202605241457</Version>
 		<Authors>Ernestas Juška</Authors>
 		<Description>Unofficial shipping of Microsoft.Dynamics.Nav.CodeAnalysis.</Description>
 		<RepositoryUrl>https://github.com/ernestasjuska/github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</RepositoryUrl>
+
+    <!-- Don't pack the project output, only the copied dlls -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <BcToolsVersion>18.0.36.33307-beta</BcToolsVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="System.Collections.Immutable" Version="10.0.7" />
+    <PackageReference Include="System.IO.Packaging" Version="10.0.7" />
+  </ItemGroup>
+
+  <!-- Download the source package (not as a dependency) -->
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.Dynamics.BusinessCentral.Development.Tools" Version="[$(BcToolsVersion)]" />
+  </ItemGroup>
+
+  <!-- Copy DLL from downloaded NuGet package before pack -->
+  <Target Name="CopyNavCodeAnalysisDll" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <SourceDllPath>$(NuGetPackageRoot)\microsoft.dynamics.businesscentral.development.tools\$(BcToolsVersion)\tools\net8.0\any</SourceDllPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <NavCodeAnalysisDll Include="$(SourceDllPath)\Microsoft.Dynamics.Nav.CodeAnalysis.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NavCodeAnalysisDll)" DestinationFolder="lib\net8.0" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Include DLL files in NuGet package -->
+  <ItemGroup>
+    <None Include="lib\net8.0\*.dll" Pack="true" PackagePath="lib\net8.0" />
+  </ItemGroup>
 
 </Project>

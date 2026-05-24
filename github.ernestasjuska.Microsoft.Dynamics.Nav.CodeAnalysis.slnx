@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/publish-nuget-package.yml" />
+  </Folder>
+  <Project Path="github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis.csproj" />
+</Solution>
