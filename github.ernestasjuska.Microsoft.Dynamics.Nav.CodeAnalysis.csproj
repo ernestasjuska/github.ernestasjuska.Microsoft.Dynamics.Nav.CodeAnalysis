@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>C:\MY\NuGet\OfflinePackages</PackageOutputPath>
 		<PackageId>github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</PackageId>
-		<Version>0.0.1-beta202605241457</Version>
+		<Version>0.0.1-beta202605241554</Version>
 		<Authors>Ernestas Juška</Authors>
 		<Description>Unofficial shipping of Microsoft.Dynamics.Nav.CodeAnalysis.</Description>
 		<RepositoryUrl>https://github.com/ernestasjuska/github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</RepositoryUrl>
