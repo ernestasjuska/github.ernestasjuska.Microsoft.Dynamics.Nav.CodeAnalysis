@@ -30,8 +30,8 @@
     <PackageDownload Include="Microsoft.Dynamics.BusinessCentral.Development.Tools" Version="[$(BcToolsVersion)]" />
   </ItemGroup>
 
-  <!-- Copy DLL from downloaded NuGet package before pack -->
-  <Target Name="CopyNavCodeAnalysisDll" BeforeTargets="GenerateNuspec">
+  <!-- Copy DLL from downloaded NuGet package before pack, and register it for packing -->
+  <Target Name="CopyNavCodeAnalysisDll" BeforeTargets="_GetPackageFiles">
     <PropertyGroup>
       <SourceDllPath>$(NuGetPackageRoot)\microsoft.dynamics.businesscentral.development.tools\$(BcToolsVersion)\tools\net8.0\any</SourceDllPath>
     </PropertyGroup>
@@ -39,11 +39,10 @@
       <NavCodeAnalysisDll Include="$(SourceDllPath)\Microsoft.Dynamics.Nav.CodeAnalysis.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(NavCodeAnalysisDll)" DestinationFolder="lib\net8.0" SkipUnchangedFiles="true" />
+    <!-- None items must be added inside the target so the glob resolves AFTER the copy -->
+    <ItemGroup>
+      <None Include="lib\net8.0\*.dll" Pack="true" PackagePath="lib\net8.0" />
+    </ItemGroup>
   </Target>
-
-  <!-- Include DLL files in NuGet package -->
-  <ItemGroup>
-    <None Include="lib\net8.0\*.dll" Pack="true" PackagePath="lib\net8.0" />
-  </ItemGroup>
 
 </Project>
