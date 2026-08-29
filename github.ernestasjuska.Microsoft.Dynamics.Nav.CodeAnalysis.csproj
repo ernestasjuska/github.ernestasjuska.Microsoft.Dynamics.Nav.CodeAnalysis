@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>C:\MY\NuGet\OfflinePackages</PackageOutputPath>
 		<PackageId>github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</PackageId>
-		<Version>0.0.1-beta202607222045</Version>
+		<Version>0.0.1-beta202608291236</Version>
 		<Authors>Ernestas Juška</Authors>
 		<Description>Unofficial shipping of Microsoft.Dynamics.Nav.CodeAnalysis.</Description>
 		<RepositoryUrl>https://github.com/ernestasjuska/github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</RepositoryUrl>
@@ -16,7 +16,7 @@
     <!-- Don't pack the project output, only the copied dlls -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
-    <BcToolsVersion>18.0.39.10160-beta</BcToolsVersion>
+    <BcToolsVersion>18.0.40.43394-beta</BcToolsVersion>
   </PropertyGroup>
 
   <ItemGroup>
