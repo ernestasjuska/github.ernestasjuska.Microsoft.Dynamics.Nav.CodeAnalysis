@@ -1,22 +1,25 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: Publish NuGet package
+name: Build and publish NuGet package
 
 on:
   push:
     tags:
-    - "prerelease/*"
+      - "prerelease/*"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing or new prerelease tag, for example prerelease/0.0.1-beta202608291236
+        required: true
+        type: string
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     defaults:
@@ -25,48 +28,126 @@ jobs:
 
     env:
       PROJECT_NAME: github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis.csproj
-      NUGET_SOURCE: "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+      NUGET_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v5
-      with:
-        dotnet-version: 8.0.x
+      - name: Select manual release tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
 
-    - name: Reject invalid prereleases
-      if: startsWith(github.ref, 'refs/tags/prerelease/')
-      run: |
-        Set-StrictMode -Version Latest
-        $ErrorActionPreference = 'Stop'
+          if (git show-ref --verify --quiet "refs/tags/$env:RELEASE_TAG") {
+            git checkout --detach "refs/tags/$env:RELEASE_TAG"
+          }
 
-        $ExpectedTag = "prerelease/$(dotnet msbuild $env:PROJECT_NAME -getProperty:Version)"
-        if ($ExpectedTag -ne $env:GITHUB_REF_NAME) {
-            throw "Tag '$ExpectedTag' != '$env:GITHUB_REF_NAME'"
-        }
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Pack and publish
-      if: startsWith(github.ref, 'refs/tags/prerelease/')
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        Set-StrictMode -Version Latest
-        $ErrorActionPreference = 'Stop'
-         
-        # NOTE: We are in beta.
-        $OutputDir = $(
-          New-Item -ItemType Directory -Path '.output' -Force |
-          Select-Object -ExpandProperty FullName
-        )
-        dotnet nuget add source $OutputDir --name local-output
+      - name: Validate release tag
+        id: release
+        env:
+          MANUAL_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
 
-        dotnet pack . `
-          --configuration Debug `
-          --property:GeneratePackageOnBuild=false `
-          --output $OutputDir
-        foreach ($Package in Get-ChildItem -Path "$OutputDir/*.nupkg") {
-          dotnet nuget push $Package.FullName --source $env:NUGET_SOURCE --api-key $env:NUGET_AUTH_TOKEN
-        }
+          $Version = dotnet msbuild $env:PROJECT_NAME -getProperty:Version
+          $ExpectedTag = "prerelease/$Version"
 
-        dotnet nuget remove source local-output
+          if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
+            "tag=$ExpectedTag" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+
+          $ReleaseTag = if ($env:GITHUB_EVENT_NAME -eq 'workflow_dispatch') {
+            $env:MANUAL_RELEASE_TAG
+          } else {
+            $env:GITHUB_REF_NAME
+          }
+
+          if ($ReleaseTag -ne $ExpectedTag) {
+            throw "Tag '$ReleaseTag' does not match project version '$ExpectedTag'."
+          }
+
+          "tag=$ReleaseTag" >> $env:GITHUB_OUTPUT
+
+      - name: Pack
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          dotnet pack . `
+            --configuration Release `
+            --property:GeneratePackageOnBuild=false `
+            --output artifacts
+
+      - name: Create tag for manual release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          if (-not (git show-ref --verify --quiet "refs/tags/$env:RELEASE_TAG")) {
+            $Commit = git rev-parse HEAD
+            gh api `
+              --method POST `
+              "repos/$env:GITHUB_REPOSITORY/git/refs" `
+              -f "ref=refs/tags/$env:RELEASE_TAG" `
+              -f "sha=$Commit"
+          }
+
+      - name: Publish to GitHub Packages
+        if: github.event_name != 'pull_request'
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          Get-ChildItem -Path 'artifacts/*.nupkg' | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --source $env:NUGET_SOURCE `
+              --api-key $env:NUGET_AUTH_TOKEN `
+              --skip-duplicate
+          }
+
+      - name: Create or update GitHub prerelease
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $Release = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$env:RELEASE_TAG" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            $ReleaseId = ($Release | ConvertFrom-Json).id
+            gh api `
+              --method PATCH `
+              "repos/$env:GITHUB_REPOSITORY/releases/$ReleaseId" `
+              -f "name=$env:RELEASE_TAG" `
+              -F prerelease=true `
+              -f make_latest=false
+            gh release upload $env:RELEASE_TAG artifacts/*.nupkg --clobber
+          } else {
+            gh release create $env:RELEASE_TAG `
+              artifacts/*.nupkg `
+              --generate-notes `
+              --latest=false `
+              --prerelease `
+              --title $env:RELEASE_TAG `
+              --verify-tag
+          }
