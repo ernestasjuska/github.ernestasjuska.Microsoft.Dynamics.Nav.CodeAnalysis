@@ -15,15 +15,12 @@ on:
         type: string
 
 permissions:
-  contents: read
+  contents: write
+  packages: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: ${{ github.event_name == 'pull_request' && 'read' || 'write' }}
-      packages: ${{ github.event_name == 'pull_request' && 'read' || 'write' }}
 
     defaults:
       run:
