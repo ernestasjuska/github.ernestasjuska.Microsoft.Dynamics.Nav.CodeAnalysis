@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -30,18 +30,22 @@
     <PackageDownload Include="Microsoft.Dynamics.BusinessCentral.Development.Tools" Version="[$(BcToolsVersion)]" />
   </ItemGroup>
 
-  <!-- Copy DLL from downloaded NuGet package before pack, and register it for packing -->
+  <!-- Copy DLLs from downloaded NuGet package before pack, and register them for packing -->
   <Target Name="CopyNavCodeAnalysisDll" BeforeTargets="_GetPackageFiles">
     <PropertyGroup>
-      <SourceDllPath>$(NuGetPackageRoot)\microsoft.dynamics.businesscentral.development.tools\$(BcToolsVersion)\tools\net8.0\any</SourceDllPath>
+      <SourceDllPathNet8>$(NuGetPackageRoot)\microsoft.dynamics.businesscentral.development.tools\$(BcToolsVersion)\tools\net8.0\any</SourceDllPathNet8>
+      <SourceDllPathNet10>$(NuGetPackageRoot)\microsoft.dynamics.businesscentral.development.tools\$(BcToolsVersion)\tools\net10.0\any</SourceDllPathNet10>
     </PropertyGroup>
     <ItemGroup>
-      <NavCodeAnalysisDll Include="$(SourceDllPath)\Microsoft.Dynamics.Nav.CodeAnalysis.dll" />
+      <NavCodeAnalysisDllNet8 Include="$(SourceDllPathNet8)\Microsoft.Dynamics.Nav.CodeAnalysis.dll" />
+      <NavCodeAnalysisDllNet10 Include="$(SourceDllPathNet10)\Microsoft.Dynamics.Nav.CodeAnalysis.dll" />
     </ItemGroup>
-    <Copy SourceFiles="@(NavCodeAnalysisDll)" DestinationFolder="lib\net8.0" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NavCodeAnalysisDllNet8)" DestinationFolder="lib\net8.0" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(NavCodeAnalysisDllNet10)" DestinationFolder="lib\net10.0" SkipUnchangedFiles="true" />
     <!-- None items must be added inside the target so the glob resolves AFTER the copy -->
     <ItemGroup>
       <None Include="lib\net8.0\*.dll" Pack="true" PackagePath="lib\net8.0" />
+      <None Include="lib\net10.0\*.dll" Pack="true" PackagePath="lib\net10.0" />
     </ItemGroup>
   </Target>
 
