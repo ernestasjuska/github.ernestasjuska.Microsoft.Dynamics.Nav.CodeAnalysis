@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<PackageOutputPath>C:\MY\NuGet\OfflinePackages</PackageOutputPath>
+		<PackageOutputPath Condition="'$(OS)' == 'Windows_NT'">C:\MY\NuGet\OfflinePackages</PackageOutputPath>
 		<PackageId>github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</PackageId>
 		<Version>0.0.1-beta202608291236</Version>
 		<Authors>Ernestas Juška</Authors>
