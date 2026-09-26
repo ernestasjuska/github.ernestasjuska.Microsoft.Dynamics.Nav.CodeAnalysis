@@ -92,6 +92,20 @@ jobs:
             --property:GeneratePackageOnBuild=false `
             --output artifacts
 
+      - name: Verify package
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $Packages = @(Get-ChildItem -Path 'artifacts/*.nupkg')
+          if ($Packages.Count -ne 1) {
+            throw "Expected exactly 1 .nupkg in artifacts, found $($Packages.Count)."
+          }
+
+          ./verify-package.ps1 `
+            -PackagePath $Packages[0].FullName `
+            -ExpectedTargetFrameworks net8.0,net10.0
+
       - name: Create tag for manual release
         if: github.event_name == 'workflow_dispatch'
         env:

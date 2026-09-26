@@ -3,5 +3,6 @@
   <Folder Name="/.github/workflows/">
     <File Path=".github/workflows/publish-nuget-package.yml" />
   </Folder>
+  <File Path="verify-package.ps1" />
   <Project Path="github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis.csproj" />
 </Solution>
