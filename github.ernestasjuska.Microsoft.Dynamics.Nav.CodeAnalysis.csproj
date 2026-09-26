@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageOutputPath>C:\MY\NuGet\OfflinePackages</PackageOutputPath>
 		<PackageId>github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</PackageId>
-		<Version>0.0.1-beta202608291236</Version>
+		<Version>0.0.1-beta202609260755</Version>
 		<Authors>Ernestas Juška</Authors>
 		<Description>Unofficial shipping of Microsoft.Dynamics.Nav.CodeAnalysis. Scope is limited to the .app package read/write surface (NavAppPackageReader, NavAppPackageWriter, NavAppManifest); the three declared package dependencies (Newtonsoft.Json, System.Collections.Immutable, System.IO.Packaging) are sufficient for that surface. Other namespaces exposed by the assembly (e.g. Microsoft.Dynamics.Nav.CodeAnalysis.Syntax, and the compilation and cop APIs) transitively require Microsoft.CodeAnalysis, Microsoft.CodeAnalysis.CSharp, Mono.Cecil, DocumentFormat.OpenXml, DocumentFormat.OpenXml.Framework, Microsoft.Security.AntiSSRF, and Microsoft.Dynamics.Nav.AL.Common. Those assemblies are NOT shipped or declared by this package (Microsoft.Dynamics.Nav.AL.Common is not published on nuget.org at all) and using those surfaces will throw FileNotFoundException at runtime.</Description>
 		<RepositoryUrl>https://github.com/ernestasjuska/github.ernestasjuska.Microsoft.Dynamics.Nav.CodeAnalysis</RepositoryUrl>
@@ -16,7 +16,7 @@
     <!-- Don't pack the project output, only the copied dlls -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
-    <BcToolsVersion>18.0.40.43394-beta</BcToolsVersion>
+    <BcToolsVersion>30.0.42.32495-beta</BcToolsVersion>
   </PropertyGroup>
 
   <ItemGroup>
